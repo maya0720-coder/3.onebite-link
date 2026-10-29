@@ -7,7 +7,7 @@ type FolderSelectProps = {
 export default function FolderSelect({ folders }: FolderSelectProps) {
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor="folderId" className="text-sm font-medium text-zinc-700">
+      <label htmlFor="folderId" className="text-sm font-medium text-[var(--text-sub)]">
         폴더
       </label>
       <select
@@ -15,7 +15,7 @@ export default function FolderSelect({ folders }: FolderSelectProps) {
         name="folderId"
         required
         defaultValue=""
-        className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-900"
+        className="field select-arrow rounded-xl bg-[var(--bg)] px-4 py-3.5 text-[17px] text-[var(--text)] outline-none"
       >
         <option value="" disabled>
           폴더를 선택하세요

@@ -4,7 +4,7 @@ export default function NewLinkButton() {
   return (
     <NextLink
       href="/new"
-      className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
+      className="btn-primary rounded-xl bg-[var(--accent)] px-4 py-2 text-[15px] font-bold text-white"
     >
       + 새 링크
     </NextLink>

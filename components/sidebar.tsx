@@ -8,9 +8,9 @@ type SidebarProps = {
 
 export default function Sidebar({ folders }: SidebarProps) {
   return (
-    <aside className="w-56 shrink-0 border-r border-zinc-200 bg-zinc-50 p-4">
-      <nav className="flex flex-col gap-4">
-        <SidebarItem label="All" href="/" />
+    <aside className="w-60 shrink-0 px-3 pt-9">
+      <nav className="sticky top-[92px] flex flex-col gap-6">
+        <SidebarItem label="전체" href="/" />
         <FolderList folders={folders} />
       </nav>
     </aside>

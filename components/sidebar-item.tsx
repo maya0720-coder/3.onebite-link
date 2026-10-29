@@ -16,10 +16,10 @@ export default function SidebarItem({ label, href }: SidebarItemProps) {
     <NextLink
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`block w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
+      className={`sidebar-item block w-full rounded-xl px-4 py-2.5 text-left text-[15px] ${
         active
-          ? "bg-zinc-900 font-medium text-white"
-          : "text-zinc-700 hover:bg-zinc-200"
+          ? "bg-[var(--accent-soft)] font-bold text-[var(--accent)]"
+          : "font-medium text-[var(--text)]"
       }`}
     >
       {label}

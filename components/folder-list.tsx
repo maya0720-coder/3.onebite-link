@@ -8,7 +8,7 @@ type FolderListProps = {
 export default function FolderList({ folders }: FolderListProps) {
   return (
     <div>
-      <h2 className="mb-2 px-3 text-xs font-semibold uppercase text-zinc-500">
+      <h2 className="mb-2 px-4 text-sm font-medium text-[var(--text-sub)]">
         폴더
       </h2>
       <ul className="flex flex-col gap-1">

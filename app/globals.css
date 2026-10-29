@@ -1,26 +1,79 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f4f4f4;
+  --surface: #ffffff;
+  --text: #191f28;
+  --text-sub: #6b7684;
+  --placeholder: #848e9a;
+  --accent: #3182f6;
+  --accent-hover: #1b64da;
+  --accent-soft: #e8f3ff;
+  --disabled: #dcdee3;
+  --error: #f04452;
+  --success: #30b06e;
+  --hover-bg: #eaebee;
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-nav: 0 1px 0 rgba(0, 0, 0, 0.06);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+/* 카드 */
+.card-hover {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card-hover:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+/* 버튼 */
+.btn-primary {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* 사이드바 */
+.sidebar-item {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.sidebar-item:not([aria-current="page"]):hover {
+  background: var(--hover-bg);
+}
+
+/* 입력 필드 */
+.field {
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.field::placeholder {
+  color: var(--placeholder);
+}
+.field:focus {
+  background: var(--surface);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* 셀렉트 화살표 */
+.select-arrow {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%236b7684' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 48px;
 }
