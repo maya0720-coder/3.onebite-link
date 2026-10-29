@@ -14,7 +14,7 @@ export default function FolderList({ folders }: FolderListProps) {
       <ul className="flex flex-col gap-1">
         {folders.map((folder) => (
           <li key={folder.id}>
-            <SidebarItem label={folder.name} />
+            <SidebarItem label={folder.name} href={`/folder/${folder.id}`} />
           </li>
         ))}
       </ul>
