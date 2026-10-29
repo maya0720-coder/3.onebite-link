@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import FolderSkeleton from "@/components/folder-skeleton";
 import LinkGrid from "@/components/link-grid";
-import { getFolders, links } from "@/lib/mock-data";
+import { getFolders, getLinks } from "@/lib/mock-data";
 
 export async function generateStaticParams() {
   const folders = await getFolders();
@@ -27,6 +27,7 @@ async function FolderContent({ params }: Pick<PageProps<"/folder/[id]">, "params
     notFound();
   }
 
+  const links = await getLinks();
   const folderLinks = links.filter((link) => link.folderId === folder.id);
 
   return (

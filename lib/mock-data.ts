@@ -2,6 +2,7 @@ import { cacheTag } from "next/cache";
 import type { Folder, Link } from "@/types/link";
 
 export const FOLDERS_TAG = "folders";
+export const LINKS_TAG = "links";
 
 // 서버 메모리에만 저장되므로 서버를 재시작하면 초기값으로 돌아간다.
 const folders: Folder[] = [
@@ -24,11 +25,18 @@ export function addFolder(name: string): Folder {
   return folder;
 }
 
-export function hasFolderName(name: string): boolean {
-  return folders.some((folder) => folder.name === name);
+export function hasFolderName(name: string, excludeId?: number): boolean {
+  return folders.some((folder) => folder.name === name && folder.id !== excludeId);
 }
 
-export const links: Link[] = [
+export function renameFolder(id: number, name: string): boolean {
+  const folder = folders.find((folder) => folder.id === id);
+  if (!folder) return false;
+  folder.name = name;
+  return true;
+}
+
+let links: Link[] = [
   {
     id: 1,
     title: "Next.js Docs",
@@ -86,3 +94,18 @@ export const links: Link[] = [
     folderId: 4,
   },
 ];
+
+export async function getLinks(): Promise<Link[]> {
+  "use cache";
+  cacheTag(LINKS_TAG);
+  return links;
+}
+
+// 폴더를 지우면 그 폴더에 담긴 링크도 함께 지운다.
+export function removeFolder(id: number): boolean {
+  const index = folders.findIndex((folder) => folder.id === id);
+  if (index === -1) return false;
+  folders.splice(index, 1);
+  links = links.filter((link) => link.folderId !== id);
+  return true;
+}

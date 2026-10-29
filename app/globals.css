@@ -13,6 +13,8 @@
   --overlay: rgba(0, 0, 0, 0.4);
   --disabled: #dcdee3;
   --error: #f04452;
+  --error-hover: #d22030;
+  --error-soft: #ffeeee;
   --success: #30b06e;
   --hover-bg: #eaebee;
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -56,6 +58,21 @@ body {
   cursor: not-allowed;
 }
 
+.btn-danger {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--error-hover);
+}
+.btn-danger:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.btn-danger:disabled {
+  background: var(--disabled);
+  color: var(--text-sub);
+  cursor: not-allowed;
+}
+
 .btn-secondary {
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
@@ -72,6 +89,35 @@ body {
 }
 .sidebar-item:not([aria-current="page"]):hover {
   background: var(--hover-bg);
+}
+
+/* 사이드바 폴더 수정/삭제 버튼: 마우스를 올리거나 키보드 포커스가 있을 때만 보인다 */
+.sidebar-row .sidebar-item {
+  padding-right: 80px;
+}
+.row-actions {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.sidebar-row:hover .row-actions,
+.sidebar-row:focus-within .row-actions {
+  opacity: 1;
+}
+.row-action {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.row-action:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.row-action-danger:hover {
+  background: var(--error-soft);
+  color: var(--error);
+}
+@media (hover: none) {
+  .row-actions {
+    opacity: 1;
+  }
 }
 
 /* 입력 필드 */

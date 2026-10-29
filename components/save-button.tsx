@@ -2,16 +2,31 @@
 
 import { useFormStatus } from "react-dom";
 
-export default function SaveButton() {
+type SaveButtonProps = {
+  label?: string;
+  pendingLabel?: string;
+  variant?: "primary" | "danger";
+};
+
+const variantClass = {
+  primary: "btn-primary bg-[var(--accent)]",
+  danger: "btn-danger bg-[var(--error)]",
+};
+
+export default function SaveButton({
+  label = "저장",
+  pendingLabel = "저장 중...",
+  variant = "primary",
+}: SaveButtonProps) {
   const { pending } = useFormStatus();
 
   return (
     <button
       type="submit"
       disabled={pending}
-      className="btn-primary w-full cursor-pointer rounded-xl bg-[var(--accent)] px-5 py-3.5 text-[17px] font-bold text-white"
+      className={`${variantClass[variant]} w-full cursor-pointer rounded-xl px-5 py-3.5 text-[17px] font-bold text-white`}
     >
-      {pending ? "저장 중..." : "저장"}
+      {pending ? pendingLabel : label}
     </button>
   );
 }

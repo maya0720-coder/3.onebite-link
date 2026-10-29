@@ -4,17 +4,17 @@ import { useActionState } from "react";
 import CancelButton from "@/components/cancel-button";
 import FolderNameInput from "@/components/folder-name-input";
 import SaveButton from "@/components/save-button";
-import { createFolder, type CreateFolderState } from "@/lib/actions";
+import { createFolder, type FolderActionState } from "@/lib/actions";
 
 type NewFolderFormProps = {
   modalId: string;
 };
 
-const initialState: CreateFolderState = { ok: false };
+const initialState: FolderActionState = { ok: false };
 
 export default function NewFolderForm({ modalId }: NewFolderFormProps) {
   const [state, formAction] = useActionState(
-    async (prevState: CreateFolderState, formData: FormData) => {
+    async (prevState: FolderActionState, formData: FormData) => {
       const result = await createFolder(prevState, formData);
       if (result.ok) document.getElementById(modalId)?.hidePopover();
       return result;

@@ -1,7 +1,9 @@
 import LinkGrid from "@/components/link-grid";
-import { links } from "@/lib/mock-data";
+import { getLinks } from "@/lib/mock-data";
 
-export default function Home() {
+export default async function Home() {
+  const links = await getLinks();
+
   return (
     <section>
       <h1 className="mb-6 text-[26px] leading-[1.3] font-bold">전체 링크</h1>

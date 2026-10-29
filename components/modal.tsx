@@ -15,7 +15,12 @@ export default function Modal({ id, title, children }: ModalProps) {
 
   const handleToggle = (event: ToggleEvent<HTMLDivElement>) => {
     if (event.newState === "open") {
-      event.currentTarget.querySelector<HTMLElement>("input, select, textarea")?.focus();
+      const target = event.currentTarget.querySelector<HTMLElement>(
+        "input:not([type=hidden]), select, textarea, button",
+      );
+      target?.focus();
+      // 기존 값이 있는 입력칸은 전체 선택해서 바로 고쳐 쓸 수 있게 한다.
+      if (target instanceof HTMLInputElement) target.select();
     } else {
       // 닫힐 때 내용을 초기화해서 다시 열면 빈 상태로 시작한다.
       setResetKey((key) => key + 1);
