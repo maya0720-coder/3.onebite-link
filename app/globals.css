@@ -9,6 +9,8 @@
   --accent: #3182f6;
   --accent-hover: #1b64da;
   --accent-soft: #e8f3ff;
+  --accent-soft-hover: #d6e9ff;
+  --overlay: rgba(0, 0, 0, 0.4);
   --disabled: #dcdee3;
   --error: #f04452;
   --success: #30b06e;
@@ -42,10 +44,25 @@ body {
 .btn-primary {
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: var(--accent-hover);
 }
-.btn-primary:active {
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.btn-primary:disabled {
+  background: var(--disabled);
+  color: var(--text-sub);
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.btn-secondary:hover {
+  background: var(--accent-soft-hover);
+}
+.btn-secondary:active {
   transform: scale(0.98);
 }
 
@@ -67,6 +84,20 @@ body {
 .field:focus {
   background: var(--surface);
   box-shadow: 0 0 0 2px var(--accent);
+}
+.field[aria-invalid="true"] {
+  box-shadow: 0 0 0 2px var(--error);
+}
+
+/* 모달 */
+.modal:popover-open {
+  animation: modal-in 0.2s ease;
+}
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
 }
 
 /* 셀렉트 화살표 */

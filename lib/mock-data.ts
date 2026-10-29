@@ -1,11 +1,32 @@
+import { cacheTag } from "next/cache";
 import type { Folder, Link } from "@/types/link";
 
-export const folders: Folder[] = [
+export const FOLDERS_TAG = "folders";
+
+// 서버 메모리에만 저장되므로 서버를 재시작하면 초기값으로 돌아간다.
+const folders: Folder[] = [
   { id: 1, name: "개발" },
   { id: 2, name: "디자인" },
   { id: 3, name: "읽을거리" },
   { id: 4, name: "도구" },
 ];
+
+export async function getFolders(): Promise<Folder[]> {
+  "use cache";
+  cacheTag(FOLDERS_TAG);
+  return folders;
+}
+
+export function addFolder(name: string): Folder {
+  const id = Math.max(0, ...folders.map((folder) => folder.id)) + 1;
+  const folder = { id, name };
+  folders.push(folder);
+  return folder;
+}
+
+export function hasFolderName(name: string): boolean {
+  return folders.some((folder) => folder.name === name);
+}
 
 export const links: Link[] = [
   {

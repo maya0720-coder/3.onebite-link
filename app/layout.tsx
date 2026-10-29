@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Header from "@/components/header";
 import Sidebar from "@/components/sidebar";
-import { folders } from "@/lib/mock-data";
+import { getFolders } from "@/lib/mock-data";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -9,7 +9,9 @@ export const metadata: Metadata = {
   description: "북마크 관리 서비스",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const folders = await getFolders();
+
   return (
     <html lang="ko" className="h-full antialiased">
       <body className="flex min-h-full flex-col bg-[var(--bg)] text-[var(--text)]">

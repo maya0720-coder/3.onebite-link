@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -8,10 +9,21 @@ type SidebarItemProps = {
   href: string;
 };
 
-export default function SidebarItem({ label, href }: SidebarItemProps) {
-  const pathname = usePathname();
-  const active = pathname === href;
+// usePathname은 요청 시점에만 알 수 있으므로, 프리렌더 단계에서는 비활성 상태로 먼저 보여준다.
+export default function SidebarItem(props: SidebarItemProps) {
+  return (
+    <Suspense fallback={<SidebarLink {...props} active={false} />}>
+      <ActiveSidebarLink {...props} />
+    </Suspense>
+  );
+}
 
+function ActiveSidebarLink(props: SidebarItemProps) {
+  const pathname = usePathname();
+  return <SidebarLink {...props} active={pathname === props.href} />;
+}
+
+function SidebarLink({ label, href, active }: SidebarItemProps & { active: boolean }) {
   return (
     <NextLink
       href={href}
