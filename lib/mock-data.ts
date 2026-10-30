@@ -1,39 +1,59 @@
+import { createClient } from "@supabase/supabase-js";
 import { cacheTag } from "next/cache";
 import type { Folder, Link } from "@/types/link";
 
 export const FOLDERS_TAG = "folders";
 export const LINKS_TAG = "links";
 
-// 서버 메모리에만 저장되므로 서버를 재시작하면 초기값으로 돌아간다.
-const folders: Folder[] = [
-  { id: 1, name: "개발" },
-  { id: 2, name: "디자인" },
-  { id: 3, name: "읽을거리" },
-  { id: 4, name: "도구" },
-];
+// "use cache" 안에서는 쿠키를 읽을 수 없으므로 쿠키 없는 클라이언트를 쓴다.
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+);
+
+// 폴더 조회·추가·이름 수정·삭제는 Supabase folders 테이블을 쓴다.
+// 아래 링크는 아직 서버 메모리에만 저장된다.
+const folders: Folder[] = [];
 
 export async function getFolders(): Promise<Folder[]> {
   "use cache";
   cacheTag(FOLDERS_TAG);
-  return folders;
+  const { data, error } = await supabase
+    .from("folders")
+    .select("id, name")
+    .order("id", { ascending: true });
+  if (error) throw error;
+  return data;
 }
 
-export function addFolder(name: string): Folder {
-  const id = Math.max(0, ...folders.map((folder) => folder.id)) + 1;
-  const folder = { id, name };
-  folders.push(folder);
-  return folder;
+export async function addFolder(name: string): Promise<Folder> {
+  const { data, error } = await supabase
+    .from("folders")
+    .insert({ name })
+    .select("id, name")
+    .single();
+  if (error) throw error;
+  return data;
 }
 
-export function hasFolderName(name: string, excludeId?: number): boolean {
-  return folders.some((folder) => folder.name === name && folder.id !== excludeId);
+export async function hasFolderName(name: string, excludeId?: number): Promise<boolean> {
+  let query = supabase.from("folders").select("id").eq("name", name);
+  if (excludeId !== undefined && Number.isInteger(excludeId)) {
+    query = query.neq("id", excludeId);
+  }
+  const { data, error } = await query.limit(1);
+  if (error) throw error;
+  return data.length > 0;
 }
 
-export function renameFolder(id: number, name: string): boolean {
-  const folder = folders.find((folder) => folder.id === id);
-  if (!folder) return false;
-  folder.name = name;
-  return true;
+export async function renameFolder(id: number, name: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("folders")
+    .update({ name })
+    .eq("id", id)
+    .select("id");
+  if (error) throw error;
+  return data.length > 0;
 }
 
 let links: Link[] = [
@@ -129,10 +149,14 @@ export function hasFolder(id: number): boolean {
 }
 
 // 폴더를 지우면 그 폴더에 담긴 링크도 함께 지운다.
-export function removeFolder(id: number): boolean {
-  const index = folders.findIndex((folder) => folder.id === id);
-  if (index === -1) return false;
-  folders.splice(index, 1);
+export async function removeFolder(id: number): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("folders")
+    .delete()
+    .eq("id", id)
+    .select("id");
+  if (error) throw error;
+  if (data.length === 0) return false;
   links = links.filter((link) => link.folderId !== id);
   return true;
 }

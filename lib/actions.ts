@@ -130,12 +130,16 @@ export async function createFolder(
   formData: FormData,
 ): Promise<FolderActionState> {
   const name = String(formData.get("name") ?? "").trim();
-  const error = validateFolderName(name);
-  if (error) {
-    return { ok: false, error };
-  }
+  try {
+    const error = await validateFolderName(name);
+    if (error) {
+      return { ok: false, error };
+    }
 
-  addFolder(name);
+    await addFolder(name);
+  } catch {
+    return { ok: false, error: "폴더를 추가하지 못했어요. 잠시 후 다시 시도해주세요." };
+  }
   updateTag(FOLDERS_TAG);
   return { ok: true };
 }
@@ -146,27 +150,34 @@ export async function renameFolder(
 ): Promise<FolderActionState> {
   const id = Number(formData.get("id"));
   const name = String(formData.get("name") ?? "").trim();
-  const error = validateFolderName(name, id);
-  if (error) {
-    return { ok: false, error };
-  }
+  try {
+    const error = await validateFolderName(name, id);
+    if (error) {
+      return { ok: false, error };
+    }
 
-  if (!Number.isInteger(id) || !renameFolderData(id, name)) {
-    return { ok: false, error: "이미 삭제되었거나 없는 폴더예요." };
+    if (!Number.isInteger(id) || !(await renameFolderData(id, name))) {
+      return { ok: false, error: "이미 삭제되었거나 없는 폴더예요." };
+    }
+  } catch {
+    return { ok: false, error: "폴더 이름을 수정하지 못했어요. 잠시 후 다시 시도해주세요." };
   }
 
   updateTag(FOLDERS_TAG);
   return { ok: true };
 }
 
-function validateFolderName(name: string, excludeId?: number): string | undefined {
+async function validateFolderName(
+  name: string,
+  excludeId?: number,
+): Promise<string | undefined> {
   if (!name) {
     return "폴더 이름을 입력해주세요.";
   }
   if (name.length > MAX_FOLDER_NAME_LENGTH) {
     return `폴더 이름은 ${MAX_FOLDER_NAME_LENGTH}자 이하로 입력해주세요.`;
   }
-  if (hasFolderName(name, excludeId)) {
+  if (await hasFolderName(name, excludeId)) {
     return "이미 같은 이름의 폴더가 있어요.";
   }
 }
@@ -177,8 +188,12 @@ export async function deleteFolder(
 ): Promise<FolderActionState> {
   const id = Number(formData.get("id"));
 
-  if (!Number.isInteger(id) || !removeFolder(id)) {
-    return { ok: false, error: "이미 삭제되었거나 없는 폴더예요." };
+  try {
+    if (!Number.isInteger(id) || !(await removeFolder(id))) {
+      return { ok: false, error: "이미 삭제되었거나 없는 폴더예요." };
+    }
+  } catch {
+    return { ok: false, error: "폴더를 삭제하지 못했어요. 잠시 후 다시 시도해주세요." };
   }
 
   updateTag(FOLDERS_TAG);
