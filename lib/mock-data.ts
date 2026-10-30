@@ -108,6 +108,22 @@ export function addLink(link: Omit<Link, "id">): Link {
   return newLink;
 }
 
+export function removeLink(id: number): Link | undefined {
+  const index = links.findIndex((link) => link.id === id);
+  if (index === -1) return undefined;
+  return links.splice(index, 1)[0];
+}
+
+export function updateLink(
+  id: number,
+  data: Pick<Link, "title" | "description" | "folderId">,
+): boolean {
+  const link = links.find((link) => link.id === id);
+  if (!link) return false;
+  Object.assign(link, data);
+  return true;
+}
+
 export function hasFolder(id: number): boolean {
   return folders.some((folder) => folder.id === id);
 }

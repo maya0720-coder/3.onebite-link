@@ -1,7 +1,6 @@
 "use server";
 
 import { updateTag } from "next/cache";
-import { redirect } from "next/navigation";
 import {
   addFolder,
   addLink,
@@ -10,7 +9,9 @@ import {
   hasFolderName,
   LINKS_TAG,
   removeFolder,
+  removeLink,
   renameFolder as renameFolderData,
+  updateLink as updateLinkData,
 } from "@/lib/mock-data";
 import { fetchOpenGraph, parseHttpUrl, type OpenGraph } from "@/lib/open-graph";
 
@@ -20,6 +21,7 @@ export type FolderActionState = {
 };
 
 export type LinkActionState = {
+  ok?: boolean;
   error?: string;
   url?: string;
   folderId?: string;
@@ -59,7 +61,66 @@ export async function createLink(
     folderId,
   });
   updateTag(LINKS_TAG);
-  redirect(`/folder/${folderId}`);
+  return { ok: true, folderId: rawFolderId };
+}
+
+export type EditLinkActionState = {
+  ok: boolean;
+  error?: string;
+  title?: string;
+  description?: string;
+  folderId?: string;
+  attempt?: number;
+};
+
+const MAX_LINK_TITLE_LENGTH = 200;
+const MAX_LINK_DESCRIPTION_LENGTH = 1000;
+
+export async function updateLink(
+  _prevState: EditLinkActionState,
+  formData: FormData,
+): Promise<EditLinkActionState> {
+  const id = Number(formData.get("id"));
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const rawFolderId = String(formData.get("folderId") ?? "");
+  const folderId = Number(rawFolderId);
+  // 실패 시 입력값을 되돌려 폼이 비워지지 않게 한다.
+  const fail = (error: string) => ({ ok: false, error, title, description, folderId: rawFolderId });
+
+  if (!title) {
+    return fail("제목을 입력해주세요.");
+  }
+  if (title.length > MAX_LINK_TITLE_LENGTH) {
+    return fail(`제목은 ${MAX_LINK_TITLE_LENGTH}자 이하로 입력해주세요.`);
+  }
+  if (description.length > MAX_LINK_DESCRIPTION_LENGTH) {
+    return fail(`설명은 ${MAX_LINK_DESCRIPTION_LENGTH}자 이하로 입력해주세요.`);
+  }
+  if (!Number.isInteger(folderId) || !hasFolder(folderId)) {
+    return fail("폴더를 선택해주세요.");
+  }
+  if (!Number.isInteger(id) || !updateLinkData(id, { title, description, folderId })) {
+    return fail("이미 삭제되었거나 없는 링크예요.");
+  }
+
+  updateTag(LINKS_TAG);
+  return { ok: true };
+}
+
+export async function deleteLink(
+  _prevState: FolderActionState,
+  formData: FormData,
+): Promise<FolderActionState> {
+  const id = Number(formData.get("id"));
+  const link = Number.isInteger(id) ? removeLink(id) : undefined;
+
+  if (!link) {
+    return { ok: false, error: "이미 삭제되었거나 없는 링크예요." };
+  }
+
+  updateTag(LINKS_TAG);
+  return { ok: true };
 }
 
 const MAX_FOLDER_NAME_LENGTH = 20;

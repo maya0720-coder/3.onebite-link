@@ -33,7 +33,7 @@ async function FolderContent({ params }: Pick<PageProps<"/folder/[id]">, "params
   return (
     <section>
       <h1 className="mb-6 text-[26px] leading-[1.3] font-bold">{folder.name}</h1>
-      <LinkGrid links={folderLinks} />
+      <LinkGrid links={folderLinks} folders={folders} />
     </section>
   );
 }

@@ -1,18 +1,19 @@
 import type { Folder } from "@/types/link";
 
 type FolderSelectProps = {
+  id?: string;
   folders: Folder[];
   defaultValue?: string;
 };
 
-export default function FolderSelect({ folders, defaultValue = "" }: FolderSelectProps) {
+export default function FolderSelect({ id = "folderId", folders, defaultValue = "" }: FolderSelectProps) {
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor="folderId" className="text-sm font-medium text-[var(--text-sub)]">
+      <label htmlFor={id} className="text-sm font-medium text-[var(--text-sub)]">
         폴더
       </label>
       <select
-        id="folderId"
+        id={id}
         name="folderId"
         required
         defaultValue={defaultValue}

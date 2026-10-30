@@ -15,10 +15,13 @@ const initialState: LinkActionState = {};
 
 export default function NewLinkForm({ folders }: NewLinkFormProps) {
   const [state, formAction] = useActionState(
-    async (prevState: LinkActionState, formData: FormData) => ({
-      ...(await createLink(prevState, formData)),
-      attempt: (prevState.attempt ?? 0) + 1,
-    }),
+    async (prevState: LinkActionState, formData: FormData) => {
+      const result = await createLink(prevState, formData);
+      // 프로덕션 빌드에서 캐시를 갱신한 액션 직후 클라이언트 라우팅(redirect, router.push)을 하면
+      // 진행 중인 응답이 끊기며 페이지가 깨지는 경우가 있어, 전체 페이지 이동으로 연다.
+      if (result.ok) window.location.assign(`/folder/${result.folderId}`);
+      return { ...result, attempt: (prevState.attempt ?? 0) + 1 };
+    },
     initialState,
   );
 

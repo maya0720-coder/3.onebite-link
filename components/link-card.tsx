@@ -26,7 +26,7 @@ export default function LinkCard({ link }: LinkCardProps) {
         />
       )}
       <div className="flex flex-1 flex-col gap-3 p-5">
-        <div className="flex items-center gap-3">
+        <div className={`flex items-center gap-3 ${link.image ? "" : "pr-20"}`}>
           {!link.image && (
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[17px] font-bold text-[var(--accent)]">
               {link.title.charAt(0).toUpperCase()}
