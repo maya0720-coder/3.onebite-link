@@ -101,6 +101,17 @@ export async function getLinks(): Promise<Link[]> {
   return links;
 }
 
+export function addLink(link: Omit<Link, "id">): Link {
+  const id = Math.max(0, ...links.map((link) => link.id)) + 1;
+  const newLink = { id, ...link };
+  links.push(newLink);
+  return newLink;
+}
+
+export function hasFolder(id: number): boolean {
+  return folders.some((folder) => folder.id === id);
+}
+
 // 폴더를 지우면 그 폴더에 담긴 링크도 함께 지운다.
 export function removeFolder(id: number): boolean {
   const index = folders.findIndex((folder) => folder.id === id);

@@ -12,22 +12,39 @@ export default function LinkCard({ link }: LinkCardProps) {
       href={link.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="card-hover flex h-full flex-col gap-3 rounded-2xl bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]"
+      className="card-hover flex h-full flex-col overflow-hidden rounded-2xl bg-[var(--surface)] shadow-[var(--shadow-card)]"
     >
-      <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[17px] font-bold text-[var(--accent)]">
-          {link.title.charAt(0).toUpperCase()}
+      {link.image && (
+        // 썸네일은 임의의 외부 도메인에서 오므로 next/image 대신 img를 사용한다.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={link.image}
+          alt=""
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          className="aspect-[1.91/1] w-full bg-[var(--bg)] object-cover"
+        />
+      )}
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        <div className="flex items-center gap-3">
+          {!link.image && (
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[17px] font-bold text-[var(--accent)]">
+              {link.title.charAt(0).toUpperCase()}
+            </span>
+          )}
+          <h3 className="truncate text-[17px] font-bold text-[var(--text)]">
+            {link.title}
+          </h3>
+        </div>
+        {link.description && (
+          <p className="line-clamp-2 text-[15px] leading-[1.5] text-[var(--text-sub)]">
+            {link.description}
+          </p>
+        )}
+        <span className="mt-auto self-start truncate rounded-lg bg-[var(--bg)] px-2.5 py-1 text-sm text-[var(--text-sub)]">
+          {hostname}
         </span>
-        <h3 className="truncate text-[17px] font-bold text-[var(--text)]">
-          {link.title}
-        </h3>
       </div>
-      <p className="line-clamp-2 text-[15px] leading-[1.5] text-[var(--text-sub)]">
-        {link.description}
-      </p>
-      <span className="mt-auto self-start truncate rounded-lg bg-[var(--bg)] px-2.5 py-1 text-sm text-[var(--text-sub)]">
-        {hostname}
-      </span>
     </a>
   );
 }

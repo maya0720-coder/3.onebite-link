@@ -8,5 +8,6 @@ export type Link = {
   title: string;
   url: string;
   description: string;
+  image?: string;
   folderId: number;
 };

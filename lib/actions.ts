@@ -1,19 +1,66 @@
 "use server";
 
 import { updateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import {
   addFolder,
+  addLink,
   FOLDERS_TAG,
+  hasFolder,
   hasFolderName,
   LINKS_TAG,
   removeFolder,
   renameFolder as renameFolderData,
 } from "@/lib/mock-data";
+import { fetchOpenGraph, parseHttpUrl, type OpenGraph } from "@/lib/open-graph";
 
 export type FolderActionState = {
   ok: boolean;
   error?: string;
 };
+
+export type LinkActionState = {
+  error?: string;
+  url?: string;
+  folderId?: string;
+  attempt?: number;
+};
+
+export async function createLink(
+  _prevState: LinkActionState,
+  formData: FormData,
+): Promise<LinkActionState> {
+  const rawUrl = String(formData.get("url") ?? "").trim();
+  const rawFolderId = String(formData.get("folderId") ?? "");
+  const folderId = Number(rawFolderId);
+  // 실패 시 입력값을 되돌려 폼이 비워지지 않게 한다.
+  const fail = (error: string) => ({ error, url: rawUrl, folderId: rawFolderId });
+
+  const target = parseHttpUrl(rawUrl);
+  if (!target) {
+    return fail("올바른 링크 주소를 입력해주세요.");
+  }
+  if (!Number.isInteger(folderId) || !hasFolder(folderId)) {
+    return fail("폴더를 선택해주세요.");
+  }
+
+  let og: OpenGraph;
+  try {
+    og = await fetchOpenGraph(target);
+  } catch {
+    return fail("링크 정보를 가져오지 못했어요. 주소를 확인해주세요.");
+  }
+
+  addLink({
+    title: og.title,
+    description: og.description,
+    image: og.image,
+    url: og.url,
+    folderId,
+  });
+  updateTag(LINKS_TAG);
+  redirect(`/folder/${folderId}`);
+}
 
 const MAX_FOLDER_NAME_LENGTH = 20;
 
