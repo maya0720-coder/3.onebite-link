@@ -6,15 +6,15 @@ export const FOLDERS_TAG = "folders";
 export const LINKS_TAG = "links";
 
 // "use cache" 안에서는 쿠키를 읽을 수 없으므로 쿠키 없는 클라이언트를 쓴다.
+// 캐시는 "use cache"와 cacheTag로만 관리한다. fetch 응답까지 캐시되면 태그로 무효화되지 않아
+// 이전 빌드의 조회 결과가 남으므로 fetch 캐시는 끈다.
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+  { global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) } },
 );
 
 // 폴더 조회·추가·이름 수정·삭제는 Supabase folders 테이블을 쓴다.
-// 아래 링크는 아직 서버 메모리에만 저장된다.
-const folders: Folder[] = [];
-
 export async function getFolders(): Promise<Folder[]> {
   "use cache";
   cacheTag(FOLDERS_TAG);
@@ -56,107 +56,96 @@ export async function renameFolder(id: number, name: string): Promise<boolean> {
   return data.length > 0;
 }
 
-let links: Link[] = [
-  {
-    id: 1,
-    title: "Next.js Docs",
-    url: "https://nextjs.org/docs",
-    description: "Next.js 공식 문서",
-    folderId: 1,
-  },
-  {
-    id: 2,
-    title: "React",
-    url: "https://react.dev",
-    description: "React 공식 문서와 튜토리얼",
-    folderId: 1,
-  },
-  {
-    id: 3,
-    title: "Tailwind CSS",
-    url: "https://tailwindcss.com",
-    description: "유틸리티 우선 CSS 프레임워크",
-    folderId: 1,
-  },
-  {
-    id: 4,
-    title: "Figma",
-    url: "https://www.figma.com",
-    description: "협업 디자인 툴",
-    folderId: 2,
-  },
-  {
-    id: 5,
-    title: "Dribbble",
-    url: "https://dribbble.com",
-    description: "디자인 레퍼런스 모음",
-    folderId: 2,
-  },
-  {
-    id: 6,
-    title: "MDN Web Docs",
-    url: "https://developer.mozilla.org",
-    description: "웹 기술 레퍼런스",
-    folderId: 3,
-  },
-  {
-    id: 7,
-    title: "GitHub",
-    url: "https://github.com",
-    description: "코드 호스팅 플랫폼",
-    folderId: 4,
-  },
-  {
-    id: 8,
-    title: "Vercel",
-    url: "https://vercel.com",
-    description: "프론트엔드 배포 플랫폼",
-    folderId: 4,
-  },
-];
+// 링크 조회·추가·수정·삭제는 Supabase links 테이블을 쓴다.
+const LINK_COLUMNS = "id, url, title, description, thumbnail_url, folder_id";
+
+type LinkRow = {
+  id: number;
+  url: string;
+  title: string | null;
+  description: string | null;
+  thumbnail_url: string | null;
+  folder_id: number | null;
+};
+
+function toLink(row: LinkRow): Link {
+  return {
+    id: row.id,
+    title: row.title ?? "",
+    url: row.url,
+    description: row.description ?? "",
+    image: row.thumbnail_url ?? undefined,
+    folderId: row.folder_id ?? 0,
+  };
+}
 
 export async function getLinks(): Promise<Link[]> {
   "use cache";
   cacheTag(LINKS_TAG);
-  return links;
+  const { data, error } = await supabase
+    .from("links")
+    .select(LINK_COLUMNS)
+    .order("id", { ascending: true });
+  if (error) throw error;
+  return data.map(toLink);
 }
 
-export function addLink(link: Omit<Link, "id">): Link {
-  const id = Math.max(0, ...links.map((link) => link.id)) + 1;
-  const newLink = { id, ...link };
-  links.push(newLink);
-  return newLink;
+export async function addLink(link: Omit<Link, "id">): Promise<Link> {
+  const { data, error } = await supabase
+    .from("links")
+    .insert({
+      url: link.url,
+      title: link.title,
+      description: link.description,
+      thumbnail_url: link.image ?? null,
+      folder_id: link.folderId,
+    })
+    .select(LINK_COLUMNS)
+    .single();
+  if (error) throw error;
+  return toLink(data);
 }
 
-export function removeLink(id: number): Link | undefined {
-  const index = links.findIndex((link) => link.id === id);
-  if (index === -1) return undefined;
-  return links.splice(index, 1)[0];
+export async function removeLink(id: number): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("links")
+    .delete()
+    .eq("id", id)
+    .select("id");
+  if (error) throw error;
+  return data.length > 0;
 }
 
-export function updateLink(
+export async function updateLink(
   id: number,
-  data: Pick<Link, "title" | "description" | "folderId">,
-): boolean {
-  const link = links.find((link) => link.id === id);
-  if (!link) return false;
-  Object.assign(link, data);
-  return true;
+  link: Pick<Link, "title" | "description" | "folderId">,
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("links")
+    .update({ title: link.title, description: link.description, folder_id: link.folderId })
+    .eq("id", id)
+    .select("id");
+  if (error) throw error;
+  return data.length > 0;
 }
 
-export function hasFolder(id: number): boolean {
-  return folders.some((folder) => folder.id === id);
+export async function hasFolder(id: number): Promise<boolean> {
+  const { data, error } = await supabase.from("folders").select("id").eq("id", id).limit(1);
+  if (error) throw error;
+  return data.length > 0;
 }
 
 // 폴더를 지우면 그 폴더에 담긴 링크도 함께 지운다.
+// 외래 키가 ON DELETE SET NULL이라 링크를 먼저 직접 지운다.
 export async function removeFolder(id: number): Promise<boolean> {
+  const { error: linksError } = await supabase.from("links").delete().eq("folder_id", id);
+  if (linksError) throw linksError;
+
   const { data, error } = await supabase
     .from("folders")
     .delete()
     .eq("id", id)
     .select("id");
   if (error) throw error;
-  if (data.length === 0) return false;
-  links = links.filter((link) => link.folderId !== id);
-  return true;
+  return data.length > 0;
 }

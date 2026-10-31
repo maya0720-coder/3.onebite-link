@@ -42,8 +42,12 @@ export async function createLink(
   if (!target) {
     return fail("올바른 링크 주소를 입력해주세요.");
   }
-  if (!Number.isInteger(folderId) || !hasFolder(folderId)) {
-    return fail("폴더를 선택해주세요.");
+  try {
+    if (!Number.isInteger(folderId) || !(await hasFolder(folderId))) {
+      return fail("폴더를 선택해주세요.");
+    }
+  } catch {
+    return fail("링크를 추가하지 못했어요. 잠시 후 다시 시도해주세요.");
   }
 
   let og: OpenGraph;
@@ -53,13 +57,17 @@ export async function createLink(
     return fail("링크 정보를 가져오지 못했어요. 주소를 확인해주세요.");
   }
 
-  addLink({
-    title: og.title,
-    description: og.description,
-    image: og.image,
-    url: og.url,
-    folderId,
-  });
+  try {
+    await addLink({
+      title: og.title,
+      description: og.description,
+      image: og.image,
+      url: og.url,
+      folderId,
+    });
+  } catch {
+    return fail("링크를 추가하지 못했어요. 잠시 후 다시 시도해주세요.");
+  }
   updateTag(LINKS_TAG);
   return { ok: true, folderId: rawFolderId };
 }
@@ -97,11 +105,15 @@ export async function updateLink(
   if (description.length > MAX_LINK_DESCRIPTION_LENGTH) {
     return fail(`설명은 ${MAX_LINK_DESCRIPTION_LENGTH}자 이하로 입력해주세요.`);
   }
-  if (!Number.isInteger(folderId) || !hasFolder(folderId)) {
-    return fail("폴더를 선택해주세요.");
-  }
-  if (!Number.isInteger(id) || !updateLinkData(id, { title, description, folderId })) {
-    return fail("이미 삭제되었거나 없는 링크예요.");
+  try {
+    if (!Number.isInteger(folderId) || !(await hasFolder(folderId))) {
+      return fail("폴더를 선택해주세요.");
+    }
+    if (!Number.isInteger(id) || !(await updateLinkData(id, { title, description, folderId }))) {
+      return fail("이미 삭제되었거나 없는 링크예요.");
+    }
+  } catch {
+    return fail("링크를 수정하지 못했어요. 잠시 후 다시 시도해주세요.");
   }
 
   updateTag(LINKS_TAG);
@@ -113,10 +125,13 @@ export async function deleteLink(
   formData: FormData,
 ): Promise<FolderActionState> {
   const id = Number(formData.get("id"));
-  const link = Number.isInteger(id) ? removeLink(id) : undefined;
 
-  if (!link) {
-    return { ok: false, error: "이미 삭제되었거나 없는 링크예요." };
+  try {
+    if (!Number.isInteger(id) || !(await removeLink(id))) {
+      return { ok: false, error: "이미 삭제되었거나 없는 링크예요." };
+    }
+  } catch {
+    return { ok: false, error: "링크를 삭제하지 못했어요. 잠시 후 다시 시도해주세요." };
   }
 
   updateTag(LINKS_TAG);
