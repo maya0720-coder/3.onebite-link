@@ -1,15 +1,10 @@
 import DeleteFolderButton from "@/components/delete-folder-button";
 import EditFolderButton from "@/components/edit-folder-button";
 import SidebarItem from "@/components/sidebar-item";
-import { getLinks } from "@/lib/mock-data";
-import type { Folder } from "@/types/link";
+import { getFolders, getLinks } from "@/lib/mock-data";
 
-type FolderListProps = {
-  folders: Folder[];
-};
-
-export default async function FolderList({ folders }: FolderListProps) {
-  const links = await getLinks();
+export default async function FolderList() {
+  const [folders, links] = await Promise.all([getFolders(), getLinks()]);
 
   return (
     <div>

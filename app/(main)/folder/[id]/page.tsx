@@ -1,16 +1,21 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import FolderSkeleton from "@/components/folder-skeleton";
 import LinkGrid from "@/components/link-grid";
 import { getFolders, getLinks } from "@/lib/mock-data";
 
-export async function generateStaticParams() {
+// 탭 제목에 폴더 이름을 보여준다. 남의 폴더이거나 없는 폴더면 기본 제목을 쓴다.
+export async function generateMetadata({ params }: PageProps<"/folder/[id]">): Promise<Metadata> {
+  const { id } = await params;
   const folders = await getFolders();
-  return folders.map((folder) => ({ id: String(folder.id) }));
+  const folder = folders.find((folder) => String(folder.id) === id);
+  return { title: folder?.name ?? "폴더" };
 }
 
 export default function FolderPage({ params }: PageProps<"/folder/[id]">) {
-  // 빌드 이후 추가된 폴더는 요청 시점에 렌더링되므로 Suspense로 감싸 스트리밍한다.
+  // 폴더는 로그인한 사용자마다 달라 빌드 때 미리 만들 수 없다.
+  // 요청 시점에 렌더링하므로 Suspense로 감싸 스트리밍한다.
   return (
     <Suspense fallback={<FolderSkeleton />}>
       <FolderContent params={params} />

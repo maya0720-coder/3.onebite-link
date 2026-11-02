@@ -1,8 +1,15 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
+
+// 로그인한 계정이 바뀌면 브라우저에 남은 이전 계정의 화면(라우터 캐시)을 버리고
+// 모든 페이지의 데이터를 처음부터 다시 불러오게 한다.
+function resetUserData() {
+  revalidatePath("/", "layout");
+}
 
 export type AuthActionState = {
   error?: string;
@@ -54,6 +61,7 @@ export async function signup(
     return fail(DEFAULT_SIGNUP_ERROR);
   }
 
+  resetUserData();
   redirect("/");
 }
 
@@ -133,6 +141,7 @@ export async function updatePassword(
     return fail(DEFAULT_UPDATE_PASSWORD_ERROR);
   }
 
+  resetUserData();
   redirect("/");
 }
 
@@ -140,6 +149,7 @@ export async function logout() {
   const supabase = createClient(await cookies());
   // 서버 세션을 끝내고 인증 쿠키를 지운다.
   await supabase.auth.signOut();
+  resetUserData();
   redirect("/login");
 }
 
@@ -192,5 +202,6 @@ export async function login(
     return fail(DEFAULT_LOGIN_ERROR);
   }
 
+  resetUserData();
   redirect("/");
 }

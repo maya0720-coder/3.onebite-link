@@ -25,14 +25,17 @@ export async function fetchOpenGraph(target: URL): Promise<OpenGraph> {
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
 
+  // 리다이렉트를 따라간 경우 최종 주소를 기준으로 상대 경로를 해석한다.
+  const pageUrl = new URL(res.url || target.href);
+
+  // 사이트는 응답했지만 봇 요청을 막는 경우(예: 403)가 있다.
+  // 주소 자체는 살아 있으므로 링크는 저장하고, 제목은 도메인 이름으로 대신한다.
   if (!res.ok) {
-    throw new Error(`페이지를 불러오지 못했어요. (${res.status})`);
+    return { title: pageUrl.hostname, description: "", url: pageUrl.href };
   }
 
   const html = await readHtml(res);
   const meta = parseMetaTags(html);
-  // 리다이렉트를 따라간 경우 최종 주소를 기준으로 상대 경로를 해석한다.
-  const pageUrl = new URL(res.url || target.href);
 
   const title =
     meta.get("og:title") ?? meta.get("twitter:title") ?? parseTitleTag(html) ?? pageUrl.hostname;

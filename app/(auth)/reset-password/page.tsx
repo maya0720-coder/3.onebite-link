@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
 import ResetPasswordForm from "@/components/reset-password-form";
+
+export const metadata: Metadata = {
+  title: "비밀번호 재설정",
+};
 
 // 재설정 메일의 링크(/auth/confirm)로 세션이 만들어진 뒤에만 들어올 수 있다. (proxy에서 확인)
 export default function ResetPasswordPage() {
