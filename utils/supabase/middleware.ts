@@ -38,10 +38,15 @@ export const updateSession = async (request: NextRequest) => {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 로그인하지 않은 사용자는 로그인/회원가입 페이지와 API 외에는 로그인 페이지로 보낸다.
+  // 로그인하지 않은 사용자는 로그인/회원가입/비밀번호 찾기 페이지와 인증 콜백, API 외에는
+  // 로그인 페이지로 보낸다. (/reset-password는 재설정 링크로 만든 세션이 있어야 들어갈 수 있다.)
   const { pathname } = request.nextUrl;
   const isPublicPath =
-    pathname === "/login" || pathname === "/signup" || pathname.startsWith("/api/");
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/forgot-password" ||
+    pathname.startsWith("/auth/") ||
+    pathname.startsWith("/api/");
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();

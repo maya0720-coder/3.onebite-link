@@ -26,8 +26,10 @@ export default function Toast({ message, onClose, duration = 3000 }: ToastProps)
 }
 
 // 토스트 요소와 띄우는 함수를 함께 돌려준다. 같은 메시지를 연달아 띄워도 매번 새로 나타난다.
-export function useToast(): [ReactNode, (message: string) => void] {
-  const [toast, setToast] = useState<{ id: number; message: string } | null>(null);
+export function useToast(initialMessage?: string): [ReactNode, (message: string) => void] {
+  const [toast, setToast] = useState<{ id: number; message: string } | null>(() =>
+    initialMessage ? { id: 0, message: initialMessage } : null,
+  );
   const showToast = useCallback((message: string) => {
     setToast({ id: Date.now(), message });
   }, []);
