@@ -143,6 +143,22 @@ export async function logout() {
   redirect("/login");
 }
 
+// 카카오 로그인: Supabase가 만들어 준 카카오 인증 페이지로 보낸다.
+// 카카오에서 돌아오면 /auth/callback에서 세션을 만든다.
+export async function signInWithKakao() {
+  const origin = (await headers()).get("origin") ?? "http://localhost:3000";
+  const supabase = createClient(await cookies());
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "kakao",
+    options: { redirectTo: `${origin}/auth/callback` },
+  });
+
+  if (error || !data.url) {
+    redirect("/login?error=kakao");
+  }
+  redirect(data.url);
+}
+
 const LOGIN_ERROR_MESSAGES: Record<string, string> = {
   invalid_credentials: "이메일 또는 비밀번호가 올바르지 않아요.",
   email_not_confirmed: "이메일 인증을 완료한 뒤 로그인해주세요.",
