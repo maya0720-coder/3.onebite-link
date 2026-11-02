@@ -34,7 +34,24 @@ export const updateSession = async (request: NextRequest) => {
   );
 
   // Refreshes the auth token if expired. Do not remove.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // 로그인하지 않은 사용자는 로그인/회원가입 페이지와 API 외에는 로그인 페이지로 보낸다.
+  const { pathname } = request.nextUrl;
+  const isPublicPath =
+    pathname === "/login" || pathname === "/signup" || pathname.startsWith("/api/");
+
+  if (!user && !isPublicPath) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.search = "";
+    const redirectResponse = NextResponse.redirect(url);
+    // 갱신된 세션 쿠키가 있으면 리다이렉트 응답에도 그대로 실어 보낸다.
+    supabaseResponse.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie));
+    return redirectResponse;
+  }
 
   return supabaseResponse
 };
