@@ -1,3 +1,4 @@
+import NextLink from "next/link";
 import { Suspense } from "react";
 import FolderList from "@/components/folder-list";
 import LogoutButton from "@/components/logout-button";
@@ -17,6 +18,12 @@ export default function Sidebar() {
         </nav>
         <div className="mt-4 border-t border-[var(--hover-bg)] pt-4">
           <LogoutButton />
+          <NextLink
+            href="/privacy"
+            className="mt-1 block px-4 py-1.5 text-[13px] text-[var(--placeholder)] hover:underline"
+          >
+            개인정보 처리방침
+          </NextLink>
         </div>
       </div>
     </aside>
